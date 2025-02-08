@@ -327,10 +327,9 @@
     <p id="guide">
       در این نسخه:<br>
       - اطلاعات بیمار شامل شماره تماس، شغل و وضعیت تأهل قابل وارد کردن است.<br>
-      - گام‌های بیماری (تاریخ، نوع رویداد، عنوان و...) ثبت و فایل‌ها به GitHub آپلود می‌شوند.<br>
+      - گام‌های بیماری (تاریخ، نوع رویداد، عنوان و...) ثبت و فایل‌ها به صورت داخلی (با استفاده از داده‌های Base64) ذخیره می‌شوند.<br>
       - امکان پیش‌نمایش تایم‌لاین قبل از دانلود وجود دارد.<br>
-      - فایل HTML نهایی جهت دانلود تولید می‌شود و فایل CSV همزمان در GitHub آپلود می‌گردد (برای تحلیل‌های آماری).<br>
-      - همچنین داده‌ها به صورت JSON قابل دانلود هستند.<br>
+      - فایل HTML نهایی جهت دانلود تولید می‌شود و داده‌ها به صورت JSON قابل دانلود هستند.<br>
       - می‌توانید گام‌ها را تکرار و مرتب‌سازی کنید.
     </p>
 
@@ -391,93 +390,20 @@
   <script>
     const STORAGE_KEY = "timeline";
 
-    /* ===== GitHub API CONFIGURATION =====
-       لطفاً موارد زیر را با اطلاعات خودتان تغییر دهید.
-       - GH_TOKEN: توکن دسترسی شخصی شما (با scope "repo")
-       - GH_OWNER: نام کاربری (یا سازمان) صاحب مخزن
-       - GH_REPO: نام مخزنی که فایل‌ها به آن آپلود می‌شوند
-       - GH_BRANCH: شاخه‌ی مورد استفاده (مثلاً "main" یا "master")
-    */
-    const GH_TOKEN   = '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';
-    const GH_OWNER   = 'DrNiloo';
-    const GH_REPO    = 'TimeLineDB';
-    const GH_BRANCH  = 'main'; // یا "master" بر اساس مخزن شما
-
-    /* ---------- Helper Functions ---------- */
-    function readFileAsBase64(file) {
+    // Convert a file into a data URL using FileReader.
+    function fileToDataUrl(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = () => {
-          const base64 = reader.result.split(',')[1];
-          resolve(base64);
-        };
+        reader.onload = () => resolve(reader.result);
         reader.onerror = error => reject(error);
         reader.readAsDataURL(file);
       });
     }
-    function blobToBase64(blob) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const base64 = reader.result.split(',')[1];
-          resolve(base64);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-    }
-    async function uploadFileToGitHub(file) {
-      const base64Content = await readFileAsBase64(file);
-      const sanitizedFileName = sanitizeFileName(file.name);
-      const filePath = `timeline_uploads/${Date.now()}_${sanitizedFileName}`;
-      const url = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${filePath}`;
-      const data = {
-        message: `Upload ${file.name}`,
-        content: base64Content,
-        branch: GH_BRANCH
-      };
-      const response = await fetch(url, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `token ${GH_TOKEN}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`GitHub upload failed: ${errorData.message}`);
-      }
-      const result = await response.json();
-      return result.content.download_url;
-    }
-    async function uploadCSVToGitHub(csvBlob, csvName) {
-      const csvContent = await blobToBase64(csvBlob);
-      const filePath = `csv_backups/${csvName}`;
-      const url = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${filePath}`;
-      const data = {
-        message: `Upload CSV ${csvName}`,
-        content: csvContent,
-        branch: GH_BRANCH
-      };
-      const response = await fetch(url, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `token ${GH_TOKEN}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`GitHub CSV upload failed: ${errorData.message}`);
-      }
-      const result = await response.json();
-      console.log("CSV uploaded successfully:", result);
-    }
+
     function sanitizeFileName(name) {
       return name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
     }
+
     function restoreData() {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (!stored) { addStep(); return; }
@@ -503,6 +429,7 @@
       }
       console.log("Data restored:", data);
     }
+
     function addStep(stepData = {}) {
       const container = document.getElementById("stepsContainer");
       const div = document.createElement("div");
@@ -589,9 +516,9 @@
         input.addEventListener('input', debounce(saveData, 300));
       });
     }
+
     function duplicateStep(stepElement) {
       const clone = stepElement.cloneNode(true);
-      // Remove event listeners from cloned element if needed, then reinitialize
       document.getElementById("stepsContainer").appendChild(clone);
       const removeBtn = clone.querySelector(".remove-step");
       removeBtn.addEventListener('click', () => {
@@ -617,6 +544,8 @@
       });
       saveData();
     }
+
+    // Instead of uploading to GitHub, convert the file to a data URL.
     async function handleFiles(files, previewContainer, stepElement) {
       for (let file of files) {
         if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
@@ -624,20 +553,19 @@
           continue;
         }
         try {
-          const directLink = await uploadFileToGitHub(file);
-          console.log(`File uploaded: ${file.name}`);
-          console.log(`Direct Link: ${directLink}`);
+          const dataUrl = await fileToDataUrl(file);
+          console.log(`File processed: ${file.name}`);
           const previewItem = document.createElement('div');
           previewItem.className = 'preview-item';
           if (file.type.startsWith('image/')) {
             const img = document.createElement('img');
-            img.src = directLink;
+            img.src = dataUrl;
             img.alt = file.name;
             img.title = file.name;
             previewItem.appendChild(img);
           } else if (file.type === 'application/pdf') {
             const iframe = document.createElement('iframe');
-            iframe.src = directLink;
+            iframe.src = dataUrl;
             iframe.title = file.name;
             previewItem.appendChild(iframe);
           }
@@ -652,11 +580,12 @@
           });
           saveData();
         } catch (error) {
-          console.error("Error uploading file:", error);
-          alert(`خطا در آپلود فایل: ${file.name}\nپیام خطا: ${error.message}`);
+          console.error("Error processing file:", error);
+          alert(`خطا در پردازش فایل: ${file.name}\nپیام خطا: ${error.message}`);
         }
       }
     }
+
     function saveData() {
       const steps = document.querySelectorAll(".step-row");
       const patientName    = document.getElementById("patientName").value.trim();
@@ -709,16 +638,14 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
       console.log("Data saved:", arr);
     }
-    async function onGenerateTimeline() {
+
+    function onGenerateTimeline() {
       saveData();
       generateTimelineAndDownload();
-      try {
-        await createAndUploadCSV();
-      } catch (err) {
-        console.error("Error uploading CSV:", err);
-        alert("آپلود فایل CSV به GitHub با خطا مواجه شد.");
-      }
+      // Optionally, you could trigger CSV download here if desired.
+      // downloadCSV(); 
     }
+
     function generateTimelineAndDownload() {
       const allData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
       let p = allData.patient || {};
@@ -937,38 +864,7 @@ ${pdfs}
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     }
-    async function createAndUploadCSV() {
-      const allData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
-      const p = allData.patient || {};
-      const steps = allData.steps || [];
-      let csv = "patientName,patientAge,patientID,patientPhone,patientJob,patientMarital,stepIndex,stepDate,stepKind,stepTitle,stepSymptoms,stepAction,stepDetails,stepOutcome,stepFiles\n";
-      steps.forEach((st, index) => {
-        let fileLinks = "";
-        if (st.files && Array.isArray(st.files)) {
-          fileLinks = st.files.map(f => f.link).join(';');
-        }
-        const sanitize = (str) => `"${String(str || "").replace(/"/g, '""')}"`;
-        csv += `${sanitize(p.name)},${sanitize(p.age)},${sanitize(p.pid)},${sanitize(p.phone)},${sanitize(p.job)},${sanitize(p.marital)},` +
-               `${sanitize(index + 1)},${sanitize(st.date)},${sanitize(st.kind)},${sanitize(st.title)},` +
-               `${sanitize(st.symptoms)},${sanitize(st.action)},${sanitize(st.details)},${sanitize(st.outcome)},${sanitize(fileLinks)}\n`;
-      });
-      const csvBlob = new Blob([csv], { type: 'text/csv' });
-      const csvName = `timeline_${Date.now()}.csv`;
-      await uploadCSVToGitHub(csvBlob, csvName);
-    }
-    function clearAllSteps() {
-      if (confirm("آیا از پاک‌سازی همه گام‌ها و اطلاعات بیمار مطمئن هستید؟")) {
-        document.getElementById("patientName").value = "";
-        document.getElementById("patientAge").value  = "";
-        document.getElementById("patientID").value   = "";
-        document.getElementById("patientPhone").value = "";
-        document.getElementById("patientJob").value   = "";
-        document.getElementById("patientMarital").value = "";
-        document.getElementById("stepsContainer").innerHTML = "";
-        localStorage.removeItem(STORAGE_KEY);
-        addStep();
-      }
-    }
+
     function escapeHTML(str) {
       if (!str) return '';
       return String(str).replace(/&/g, "&amp;")
@@ -977,6 +873,7 @@ ${pdfs}
                         .replace(/"/g, "&quot;")
                         .replace(/'/g, "&#039;");
     }
+
     function downloadJSON() {
       const data = localStorage.getItem(STORAGE_KEY) || "{}";
       const blob = new Blob([data], { type: 'application/json' });
@@ -989,9 +886,11 @@ ${pdfs}
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     }
+
     function toggleDarkMode() {
       document.body.classList.toggle('dark-mode');
     }
+
     // Modal preview functions
     function openPreviewModal() {
       saveData();
@@ -1204,15 +1103,15 @@ ${pdfs}
 `;
       const blob = new Blob([code], { type: 'text/html' });
       const url = URL.createObjectURL(blob);
-      const previewFrame = document.getElementById("previewFrame");
-      previewFrame.src = url;
-      document.getElementById("modalOverlay").style.display = "flex";
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Timeline_${Date.now()}.html`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     }
-    function closePreviewModal() {
-      document.getElementById("modalOverlay").style.display = "none";
-      const previewFrame = document.getElementById("previewFrame");
-      previewFrame.src = "";
-    }
+
     // Debounce function to limit the frequency of save calls
     function debounce(func, wait) {
       let timeout;
@@ -1221,6 +1120,7 @@ ${pdfs}
         timeout = setTimeout(() => func.apply(this, args), wait);
       };
     }
+
     // Initialize Sortable for steps reordering
     new Sortable(document.getElementById("stepsContainer"), {
       animation: 150,
@@ -1228,14 +1128,30 @@ ${pdfs}
         saveData();
       }
     });
+
     window.addEventListener('load', restoreData);
     document.getElementById("addStepBtn").addEventListener('click', () => addStep());
     document.getElementById("generateBtn").addEventListener('click', onGenerateTimeline);
-    document.getElementById("clearBtn").addEventListener('click', clearAllSteps);
+    document.getElementById("clearBtn").addEventListener('click', () => {
+      if (confirm("آیا از پاک‌سازی همه گام‌ها و اطلاعات بیمار مطمئن هستید؟")) {
+        document.getElementById("patientName").value = "";
+        document.getElementById("patientAge").value  = "";
+        document.getElementById("patientID").value   = "";
+        document.getElementById("patientPhone").value = "";
+        document.getElementById("patientJob").value   = "";
+        document.getElementById("patientMarital").value = "";
+        document.getElementById("stepsContainer").innerHTML = "";
+        localStorage.removeItem(STORAGE_KEY);
+        addStep();
+      }
+    });
     document.getElementById("downloadJSONBtn").addEventListener('click', downloadJSON);
     document.getElementById("toggleDarkModeBtn").addEventListener('click', toggleDarkMode);
     document.getElementById("previewBtn").addEventListener('click', openPreviewModal);
-    document.getElementById("modalClose").addEventListener('click', closePreviewModal);
+    document.getElementById("modalClose").addEventListener('click', () => {
+      document.getElementById("modalOverlay").style.display = "none";
+      document.getElementById("previewFrame").src = "";
+    });
   </script>
 </body>
 </html>
