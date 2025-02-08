@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تولیدکننده‌ی تایم‌لاین بالینی - نسخه پیشرفته</title>
+  <style>
+    /* Reset */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'IRANSans', sans-serif;
+      background: #f0f2f5;
+      color: #333;
+      direction: rtl;
+      padding: 20px;
+      transition: background 0.3s, color 0.3s;
+    }
+    /* Dark mode */
+    body.dark-mode {
+      background: #1e1e1e;
+      color: #ddd;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #34495e;
+      font-size: 2em;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+    body.dark-mode .container {
+      background: #2c2c2c;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+    #guide {
+      background: #ecf0f1;
+      padding: 20px;
+      border-radius: 8px;
+      font-size: 1em;
+      line-height: 1.6em;
+      margin-bottom: 30px;
+      border-left: 5px solid #2980b9;
+    }
+    body.dark-mode #guide {
+      background: #444;
+      border-left: 5px solid #2980b9;
+    }
+    .patient-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+      background: #f9f9f9;
+      padding: 20px;
+      border: 1px solid #dcdcdc;
+      border-radius: 8px;
+    }
+    body.dark-mode .patient-info {
+      background: #3a3a3a;
+      border: 1px solid #555;
+    }
+    .patient-info label {
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #555;
+    }
+    body.dark-mode .patient-info label {
+      color: #ccc;
+    }
+    .patient-info input {
+      padding: 12px 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1em;
+      transition: border-color 0.3s;
+    }
+    .patient-info input:focus {
+      border-color: #2980b9;
+      outline: none;
+    }
+    .step-row {
+      background: #fdfdfd;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 20px;
+      position: relative;
+      margin-bottom: 20px;
+      transition: box-shadow 0.3s;
+    }
+    body.dark-mode .step-row {
+      background: #444;
+      border: 1px solid #666;
+    }
+    .step-row:hover {
+      box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+    }
+    .step-row::before {
+      content: "";
+      position: absolute;
+      top: 20px;
+      left: -10px;
+      width: 20px;
+      height: 20px;
+      background: #2980b9;
+      border-radius: 50%;
+    }
+    .step-row label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #555;
+    }
+    body.dark-mode .step-row label {
+      color: #ccc;
+    }
+    .step-row input, .step-row textarea {
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 0.95em;
+      transition: border-color 0.3s;
+      background: #fff;
+      color: #333;
+    }
+    body.dark-mode .step-row input,
+    body.dark-mode .step-row textarea {
+      background: #555;
+      color: #ddd;
+      border: 1px solid #777;
+    }
+    .step-row input:focus, .step-row textarea:focus {
+      border-color: #2980b9;
+      outline: none;
+    }
+    .step-row textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+    /* Remove and duplicate buttons */
+    .remove-step, .duplicate-step {
+      position: absolute;
+      top: 15px;
+      width: 30px;
+      height: 30px;
+      border: none;
+      color: #fff;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1.2em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s;
+    }
+    .remove-step {
+      right: 15px;
+      background: #e74c3c;
+    }
+    .remove-step:hover {
+      background: #c0392b;
+    }
+    .duplicate-step {
+      right: 55px;
+      background: #3498db;
+    }
+    .duplicate-step:hover {
+      background: #2980b9;
+    }
+    .file-input {
+      margin-bottom: 15px;
+    }
+    .file-input label {
+      font-weight: bold;
+      color: #555;
+      margin-bottom: 5px;
+      display: block;
+    }
+    body.dark-mode .file-input label {
+      color: #ccc;
+    }
+    .file-input input[type="file"] {
+      border: none;
+      padding: 0;
+      font-size: 1em;
+      cursor: pointer;
+    }
+    .preview-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .preview-item {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s;
+    }
+    .preview-item:hover {
+      transform: scale(1.05);
+    }
+    .preview-item img, .preview-item iframe {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .preview-item .remove-file {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: rgba(231, 76, 60, 0.9);
+      border: none;
+      color: #fff;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      font-size: 1em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s;
+    }
+    .preview-item .remove-file:hover {
+      background: rgba(192, 57, 43, 0.9);
+    }
+    .buttons-bar {
+      text-align: center;
+      margin-top: 30px;
+    }
+    .buttons-bar button {
+      padding: 12px 25px;
+      margin: 10px;
+      border: none;
+      border-radius: 6px;
+      font-size: 1em;
+      font-weight: bold;
+      cursor: pointer;
+      color: #fff;
+      transition: background 0.3s, transform 0.2s;
+    }
+    #addStepBtn { background: #27ae60; }
+    #addStepBtn:hover { background: #219150; transform: translateY(-2px); }
+    #generateBtn { background: #2980b9; }
+    #generateBtn:hover { background: #1f6391; transform: translateY(-2px); }
+    #clearBtn { background: #e67e22; }
+    #clearBtn:hover { background: #d35400; transform: translateY(-2px); }
+    #previewBtn { background: #8e44ad; }
+    #previewBtn:hover { background: #7d3c98; transform: translateY(-2px); }
+    #downloadJSONBtn { background: #16a085; }
+    #downloadJSONBtn:hover { background: #138f75; transform: translateY(-2px); }
+    #toggleDarkModeBtn { background: #34495e; }
+    #toggleDarkModeBtn:hover { background: #2c3e50; transform: translateY(-2px); }
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .patient-info { grid-template-columns: 1fr; }
+      .buttons-bar button { width: 100%; margin: 10px 0; }
+      .preview-item { width: 80px; height: 80px; }
+      .step-row::before { left: -5px; }
+      .duplicate-step { right: 45px; }
+    }
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      max-width: 90%;
+      max-height: 90%;
+      overflow: auto;
+      position: relative;
+    }
+    body.dark-mode .modal {
+      background: #2c2c2c;
+      color: #ddd;
+    }
+    .modal-close {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: #e74c3c;
+      border: none;
+      color: #fff;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+      font-size: 1.2em;
+    }
+    .modal iframe {
+      width: 100%;
+      height: 80vh;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>تولیدکننده‌ی تایم‌لاین بالینی پیشرفته</h1>
+
+  <div class="container">
+    <p id="guide">
+      در این نسخه:<br>
+      - اطلاعات بیمار شامل شماره تماس، شغل و وضعیت تأهل قابل وارد کردن است.<br>
+      - گام‌های بیماری (تاریخ، نوع رویداد، عنوان و...) ثبت و فایل‌ها به GitHub آپلود می‌شوند.<br>
+      - امکان پیش‌نمایش تایم‌لاین قبل از دانلود وجود دارد.<br>
+      - فایل HTML نهایی جهت دانلود تولید می‌شود و فایل CSV همزمان در GitHub آپلود می‌گردد (برای تحلیل‌های آماری).<br>
+      - همچنین داده‌ها به صورت JSON قابل دانلود هستند.<br>
+      - می‌توانید گام‌ها را تکرار و مرتب‌سازی کنید.
+    </p>
+
+    <!-- اطلاعات پایه بیمار -->
+    <div class="patient-info" id="patientInfo">
+      <div>
+        <label for="patientName">نام بیمار:</label>
+        <input type="text" id="patientName" placeholder="مثلاً علی رضایی"/>
+      </div>
+      <div>
+        <label for="patientAge">سن بیمار:</label>
+        <input type="number" id="patientAge" placeholder="مثلاً 45"/>
+      </div>
+      <div>
+        <label for="patientID">شماره پرونده:</label>
+        <input type="text" id="patientID" placeholder="مثلاً 12345"/>
+      </div>
+      <div>
+        <label for="patientPhone">شماره تماس:</label>
+        <input type="text" id="patientPhone" placeholder="مثلاً 09121234567"/>
+      </div>
+      <div>
+        <label for="patientJob">شغل بیمار:</label>
+        <input type="text" id="patientJob" placeholder="مثلاً مهندس"/>
+      </div>
+      <div>
+        <label for="patientMarital">وضعیت تأهل:</label>
+        <input type="text" id="patientMarital" placeholder="مثلاً متأهل"/>
+      </div>
+    </div>
+
+    <!-- گام‌ها -->
+    <div id="stepsContainer">
+      <!-- گام‌ها به صورت دینامیک توسط جاوااسکریپت افزوده خواهند شد -->
+    </div>
+
+    <!-- دکمه‌ها -->
+    <div class="buttons-bar">
+      <button id="addStepBtn">+ گام جدید</button>
+      <button id="generateBtn">تولید تایم‌لاین</button>
+      <button id="previewBtn">پیش‌نمایش تایم‌لاین</button>
+      <button id="downloadJSONBtn">دانلود JSON</button>
+      <button id="clearBtn">پاک‌سازی همه گام‌ها</button>
+      <button id="toggleDarkModeBtn">تغییر حالت رنگ</button>
+    </div>
+  </div>
+
+  <!-- Modal for timeline preview -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <button class="modal-close" id="modalClose">&times;</button>
+      <iframe id="previewFrame"></iframe>
+    </div>
+  </div>
+
+  <!-- Include SortableJS from CDN for reordering steps -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <script>
+    const STORAGE_KEY = "timeline";
+
+    /* ===== GitHub API CONFIGURATION =====
+       لطفاً موارد زیر را با اطلاعات خودتان تغییر دهید.
+       - GH_TOKEN: توکن دسترسی شخصی شما (با scope "repo")
+       - GH_OWNER: نام کاربری (یا سازمان) صاحب مخزن
+       - GH_REPO: نام مخزنی که فایل‌ها به آن آپلود می‌شوند
+       - GH_BRANCH: شاخه‌ی مورد استفاده (مثلاً "main" یا "master")
+    */
+    const GH_TOKEN   = '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';
+    const GH_OWNER   = 'DrNiloo';
+    const GH_REPO    = 'TimeLineDB';
+    const GH_BRANCH  = 'main'; // یا "master" بر اساس مخزن شما
+
+    /* ---------- Helper Functions ---------- */
+    function readFileAsBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64 = reader.result.split(',')[1];
+          resolve(base64);
+        };
+        reader.onerror = error => reject(error);
+        reader.readAsDataURL(file);
+      });
+    }
+    function blobToBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64 = reader.result.split(',')[1];
+          resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+    async function uploadFileToGitHub(file) {
+      const base64Content = await readFileAsBase64(file);
+      const sanitizedFileName = sanitizeFileName(file.name);
+      const filePath = `timeline_uploads/${Date.now()}_${sanitizedFileName}`;
+      const url = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${filePath}`;
+      const data = {
+        message: `Upload ${file.name}`,
+        content: base64Content,
+        branch: GH_BRANCH
+      };
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `token ${GH_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`GitHub upload failed: ${errorData.message}`);
+      }
+      const result = await response.json();
+      return result.content.download_url;
+    }
+    async function uploadCSVToGitHub(csvBlob, csvName) {
+      const csvContent = await blobToBase64(csvBlob);
+      const filePath = `csv_backups/${csvName}`;
+      const url = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${filePath}`;
+      const data = {
+        message: `Upload CSV ${csvName}`,
+        content: csvContent,
+        branch: GH_BRANCH
+      };
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `token ${GH_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`GitHub CSV upload failed: ${errorData.message}`);
+      }
+      const result = await response.json();
+      console.log("CSV uploaded successfully:", result);
+    }
+    function sanitizeFileName(name) {
+      return name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+    }
+    function restoreData() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (!stored) { addStep(); return; }
+      let data;
+      try {
+        data = JSON.parse(stored);
+      } catch(e) {
+        console.warn("خطا در پارس داده:", e);
+        addStep();
+        return;
+      }
+      if (data && data.patient) {
+        document.getElementById("patientName").value = data.patient.name || "";
+        document.getElementById("patientAge").value  = data.patient.age  || "";
+        document.getElementById("patientID").value   = data.patient.pid  || "";
+        document.getElementById("patientPhone").value = data.patient.phone || "";
+        document.getElementById("patientJob").value   = data.patient.job || "";
+        document.getElementById("patientMarital").value = data.patient.marital || "";
+      }
+      if (data && data.steps && Array.isArray(data.steps)) {
+        document.getElementById("stepsContainer").innerHTML = "";
+        data.steps.forEach(d => addStep(d));
+      }
+      console.log("Data restored:", data);
+    }
+    function addStep(stepData = {}) {
+      const container = document.getElementById("stepsContainer");
+      const div = document.createElement("div");
+      div.className = "step-row";
+      div.innerHTML = `
+        <button class="remove-step" title="حذف گام">&times;</button>
+        <button class="duplicate-step" title="تکرار گام">&#x2398;</button>
+        <label>تاریخ:</label>
+        <input type="date" placeholder="تاریخ">
+        <label>نوع رویداد:</label>
+        <input type="text" placeholder="مثلاً آزمایش، معاینه...">
+        <label>عنوان:</label>
+        <input type="text" placeholder="مثلاً CBC">
+        <label>علایم/شکایات:</label>
+        <textarea placeholder="علایم/شکایات"></textarea>
+        <label>اقدام انجام‌شده:</label>
+        <textarea placeholder="اقدام انجام‌شده"></textarea>
+        <label>خلاصه جزئیات:</label>
+        <textarea placeholder="خلاصه جزئیات"></textarea>
+        <label>نتیجه/جمع‌بندی:</label>
+        <textarea placeholder="نتیجه/جمع‌بندی"></textarea>
+        <div class="file-input">
+          <label>آپلود تصاویر/PDF:</label>
+          <input type="file" accept="image/*,application/pdf" multiple>
+          <div class="preview-container"></div>
+        </div>
+      `;
+      container.appendChild(div);
+      const inputs = div.querySelectorAll("input, textarea");
+      inputs[0].value = stepData.date || "";
+      inputs[1].value = stepData.kind || "";
+      inputs[2].value = stepData.title || "";
+      inputs[3].value = stepData.symptoms || "";
+      inputs[4].value = stepData.action || "";
+      inputs[5].value = stepData.details || "";
+      inputs[6].value = stepData.outcome || "";
+      const fileInput = div.querySelector('input[type="file"]');
+      const previewContainer = div.querySelector('.preview-container');
+      if (stepData.files && Array.isArray(stepData.files)) {
+        stepData.files.forEach(file => {
+          const previewItem = document.createElement('div');
+          previewItem.className = 'preview-item';
+          if (file.type === 'image') {
+            const img = document.createElement('img');
+            img.src = file.link;
+            img.alt = file.name;
+            img.title = file.name;
+            previewItem.appendChild(img);
+          } else if (file.type === 'pdf') {
+            const iframe = document.createElement('iframe');
+            iframe.src = file.link;
+            iframe.title = file.name;
+            previewItem.appendChild(iframe);
+          }
+          const removeFileBtn = document.createElement('button');
+          removeFileBtn.className = 'remove-file';
+          removeFileBtn.innerHTML = '&times;';
+          previewItem.appendChild(removeFileBtn);
+          previewContainer.appendChild(previewItem);
+          removeFileBtn.addEventListener('click', () => {
+            previewItem.remove();
+            saveData();
+          });
+        });
+      }
+      const removeBtn = div.querySelector(".remove-step");
+      removeBtn.addEventListener('click', () => {
+        if (confirm("آیا از حذف این گام مطمئن هستید؟")) {
+          div.remove();
+          saveData();
+        }
+      });
+      const duplicateBtn = div.querySelector(".duplicate-step");
+      duplicateBtn.addEventListener('click', () => {
+        duplicateStep(div);
+      });
+      fileInput.addEventListener('change', async function(event) {
+        const files = event.target.files;
+        await handleFiles(files, previewContainer, div);
+        saveData();
+      });
+      // Use a debounced save to avoid excessive localStorage writes
+      inputs.forEach(input => {
+        input.addEventListener('input', debounce(saveData, 300));
+      });
+    }
+    function duplicateStep(stepElement) {
+      const clone = stepElement.cloneNode(true);
+      // Remove event listeners from cloned element if needed, then reinitialize
+      document.getElementById("stepsContainer").appendChild(clone);
+      const removeBtn = clone.querySelector(".remove-step");
+      removeBtn.addEventListener('click', () => {
+        if (confirm("آیا از حذف این گام مطمئن هستید؟")) {
+          clone.remove();
+          saveData();
+        }
+      });
+      const duplicateBtn = clone.querySelector(".duplicate-step");
+      duplicateBtn.addEventListener('click', () => {
+        duplicateStep(clone);
+      });
+      const fileInput = clone.querySelector('input[type="file"]');
+      const previewContainer = clone.querySelector('.preview-container');
+      fileInput.addEventListener('change', async function(event) {
+        const files = event.target.files;
+        await handleFiles(files, previewContainer, clone);
+        saveData();
+      });
+      const inputs = clone.querySelectorAll("input, textarea");
+      inputs.forEach(input => {
+        input.addEventListener('input', debounce(saveData, 300));
+      });
+      saveData();
+    }
+    async function handleFiles(files, previewContainer, stepElement) {
+      for (let file of files) {
+        if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+          alert("فقط تصاویر یا PDF پشتیبانی می‌شوند.");
+          continue;
+        }
+        try {
+          const directLink = await uploadFileToGitHub(file);
+          console.log(`File uploaded: ${file.name}`);
+          console.log(`Direct Link: ${directLink}`);
+          const previewItem = document.createElement('div');
+          previewItem.className = 'preview-item';
+          if (file.type.startsWith('image/')) {
+            const img = document.createElement('img');
+            img.src = directLink;
+            img.alt = file.name;
+            img.title = file.name;
+            previewItem.appendChild(img);
+          } else if (file.type === 'application/pdf') {
+            const iframe = document.createElement('iframe');
+            iframe.src = directLink;
+            iframe.title = file.name;
+            previewItem.appendChild(iframe);
+          }
+          const removeFileBtn = document.createElement('button');
+          removeFileBtn.className = 'remove-file';
+          removeFileBtn.innerHTML = '&times;';
+          previewItem.appendChild(removeFileBtn);
+          previewContainer.appendChild(previewItem);
+          removeFileBtn.addEventListener('click', () => {
+            previewItem.remove();
+            saveData();
+          });
+          saveData();
+        } catch (error) {
+          console.error("Error uploading file:", error);
+          alert(`خطا در آپلود فایل: ${file.name}\nپیام خطا: ${error.message}`);
+        }
+      }
+    }
+    function saveData() {
+      const steps = document.querySelectorAll(".step-row");
+      const patientName    = document.getElementById("patientName").value.trim();
+      const patientAge     = document.getElementById("patientAge").value.trim();
+      const patientID      = document.getElementById("patientID").value.trim();
+      const patientPhone   = document.getElementById("patientPhone").value.trim();
+      const patientJob     = document.getElementById("patientJob").value.trim();
+      const patientMarital = document.getElementById("patientMarital").value.trim();
+      let arr = {
+        patient: { 
+          name: patientName, 
+          age: patientAge, 
+          pid: patientID, 
+          phone: patientPhone, 
+          job: patientJob, 
+          marital: patientMarital 
+        },
+        steps: []
+      };
+      steps.forEach((st, index) => {
+        const inputs = st.querySelectorAll("input, textarea");
+        let filesArr = [];
+        const previewImages = st.querySelectorAll('.preview-container img');
+        const previewIframes = st.querySelectorAll('.preview-container iframe');
+        previewImages.forEach(img => {
+          filesArr.push({
+            type: 'image',
+            name: img.alt,
+            link: img.src
+          });
+        });
+        previewIframes.forEach(iframe => {
+          filesArr.push({
+            type: 'pdf',
+            name: iframe.title,
+            link: iframe.src
+          });
+        });
+        arr.steps.push({
+          date: inputs[0].value.trim(),
+          kind: inputs[1].value.trim(),
+          title: inputs[2].value.trim(),
+          symptoms: inputs[3].value.trim(),
+          action: inputs[4].value.trim(),
+          details: inputs[5].value.trim(),
+          outcome: inputs[6].value.trim(),
+          files: filesArr
+        });
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+      console.log("Data saved:", arr);
+    }
+    async function onGenerateTimeline() {
+      saveData();
+      generateTimelineAndDownload();
+      try {
+        await createAndUploadCSV();
+      } catch (err) {
+        console.error("Error uploading CSV:", err);
+        alert("آپلود فایل CSV به GitHub با خطا مواجه شد.");
+      }
+    }
+    function generateTimelineAndDownload() {
+      const allData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+      let p = allData.patient || {};
+      let steps = allData.steps || [];
+      let code = `<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<title>خروجی تایم‌لاین</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Vazir&display=swap');
+  body {
+    margin: 0; 
+    padding: 20px;
+    font-family: 'Vazir', sans-serif;
+    background: linear-gradient(to right, #f0f2f5, #d9e4f5);
+    color: #333;
+    direction: rtl;
+  }
+  .patient-header {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  .patient-header h2 {
+    margin-bottom: 15px;
+    color: #34495e;
+  }
+  .patient-header .info {
+    font-size: 1em;
+    color: #555;
+    line-height: 1.8em;
+  }
+  .timeline {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    padding: 20px 0;
+  }
+  .timeline::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 3px;
+    height: 100%;
+    background: #2980b9;
+    transform: translateX(-50%);
+  }
+  .event-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    width: 45%;
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .event-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+  .event-card.left {
+    margin-right: auto;
+  }
+  .event-card.right {
+    margin-left: auto;
+  }
+  .event-card::before {
+    content: "";
+    position: absolute;
+    top: 20px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #2980b9;
+    border: 4px solid #fff;
+  }
+  .event-card.left::before {
+    right: -10px;
+  }
+  .event-card.right::before {
+    left: -10px;
+  }
+  .event-date {
+    font-size: 0.95em;
+    color: #666;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+  .event-kind {
+    display: inline-block;
+    font-size: 0.85em;
+    background: #dcecff;
+    color: #2980b9;
+    padding: 5px 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+  }
+  .event-title {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #2c3e50;
+  }
+  .event-section {
+    font-size: 1em;
+    margin-bottom: 10px;
+    color: #555;
+    line-height: 1.6em;
+  }
+  .event-section label {
+    font-weight: bold;
+    color: #34495e;
+    margin-right: 5px;
+  }
+  .event-media {
+    margin-top: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+  .event-media img, .event-media iframe {
+    max-width: 300px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .event-media img:hover, .event-media iframe:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+  }
+  @media (max-width: 768px) {
+    .timeline::before {
+      left: 20px;
+    }
+    .event-card {
+      width: 90%;
+    }
+    .event-card.left, .event-card.right {
+      margin: 0 auto;
+    }
+    .event-card.left::before, .event-card.right::before {
+      left: -10px;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="patient-header">
+  <h2>اطلاعات بیمار</h2>
+  <div class="info">
+    نام بیمار: ${escapeHTML(p.name || "")}<br>
+    سن بیمار: ${p.age ? p.age + ' سال' : ''}<br>
+    شماره پرونده: ${escapeHTML(p.pid || "")}<br>
+    شماره تماس: ${escapeHTML(p.phone || "")}<br>
+    شغل: ${escapeHTML(p.job || "")}<br>
+    وضعیت تأهل: ${escapeHTML(p.marital || "")}
+  </div>
+</div>
+<div class="timeline">
+`;
+      steps.forEach((st, index) => {
+        const alignmentClass = index % 2 === 0 ? 'left' : 'right';
+        const dateVal      = escapeHTML(st.date);
+        const kindVal      = escapeHTML(st.kind);
+        const titleVal     = escapeHTML(st.title);
+        const symptomsVal  = escapeHTML(st.symptoms);
+        const actionVal    = escapeHTML(st.action);
+        const detailVal    = escapeHTML(st.details);
+        const outcomeVal   = escapeHTML(st.outcome);
+        if (!titleVal) { return; }
+        let filesHTML = '';
+        if (st.files && Array.isArray(st.files) && st.files.length > 0) {
+          const images = st.files.filter(f => f.type === 'image').map(f => `
+            <img src="${f.link}" alt="${escapeHTML(f.name)}" title="${escapeHTML(f.name)}" />
+          `).join('');
+          const pdfs = st.files.filter(f => f.type === 'pdf').map(f => `
+            <iframe src="${f.link}" title="${escapeHTML(f.name)}"></iframe>
+          `).join('');
+          if (images || pdfs) {
+            filesHTML = `<div class="event-media">
+${images}
+${pdfs}
+</div>`;
+          }
+        }
+        code += `
+  <div class="event-card ${alignmentClass}">
+    <div class="event-date">${dateVal}</div>
+    ${kindVal ? `<div class="event-kind">${kindVal}</div>` : ''}
+    <div class="event-title">${titleVal}</div>
+    ${symptomsVal ? `<div class="event-section"><label>علایم/شکایات:</label>${symptomsVal}</div>` : ''}
+    ${actionVal    ? `<div class="event-section"><label>اقدام:</label>${actionVal}</div>` : ''}
+    ${detailVal    ? `<div class="event-section"><label>جزئیات:</label>${detailVal}</div>` : ''}
+    ${outcomeVal   ? `<div class="event-section"><label>نتیجه:</label>${outcomeVal}</div>` : ''}
+    ${filesHTML}
+  </div>
+`;
+      });
+      code += `
+</div>
+</body>
+</html>
+`;
+      const blob = new Blob([code], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Timeline_${Date.now()}.html`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+    async function createAndUploadCSV() {
+      const allData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+      const p = allData.patient || {};
+      const steps = allData.steps || [];
+      let csv = "patientName,patientAge,patientID,patientPhone,patientJob,patientMarital,stepIndex,stepDate,stepKind,stepTitle,stepSymptoms,stepAction,stepDetails,stepOutcome,stepFiles\n";
+      steps.forEach((st, index) => {
+        let fileLinks = "";
+        if (st.files && Array.isArray(st.files)) {
+          fileLinks = st.files.map(f => f.link).join(';');
+        }
+        const sanitize = (str) => `"${String(str || "").replace(/"/g, '""')}"`;
+        csv += `${sanitize(p.name)},${sanitize(p.age)},${sanitize(p.pid)},${sanitize(p.phone)},${sanitize(p.job)},${sanitize(p.marital)},` +
+               `${sanitize(index + 1)},${sanitize(st.date)},${sanitize(st.kind)},${sanitize(st.title)},` +
+               `${sanitize(st.symptoms)},${sanitize(st.action)},${sanitize(st.details)},${sanitize(st.outcome)},${sanitize(fileLinks)}\n`;
+      });
+      const csvBlob = new Blob([csv], { type: 'text/csv' });
+      const csvName = `timeline_${Date.now()}.csv`;
+      await uploadCSVToGitHub(csvBlob, csvName);
+    }
+    function clearAllSteps() {
+      if (confirm("آیا از پاک‌سازی همه گام‌ها و اطلاعات بیمار مطمئن هستید؟")) {
+        document.getElementById("patientName").value = "";
+        document.getElementById("patientAge").value  = "";
+        document.getElementById("patientID").value   = "";
+        document.getElementById("patientPhone").value = "";
+        document.getElementById("patientJob").value   = "";
+        document.getElementById("patientMarital").value = "";
+        document.getElementById("stepsContainer").innerHTML = "";
+        localStorage.removeItem(STORAGE_KEY);
+        addStep();
+      }
+    }
+    function escapeHTML(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, "&amp;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;")
+                        .replace(/"/g, "&quot;")
+                        .replace(/'/g, "&#039;");
+    }
+    function downloadJSON() {
+      const data = localStorage.getItem(STORAGE_KEY) || "{}";
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `timeline_${Date.now()}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+    }
+    // Modal preview functions
+    function openPreviewModal() {
+      saveData();
+      const allData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+      let p = allData.patient || {};
+      let steps = allData.steps || [];
+      let code = `<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<title>پیش‌نمایش تایم‌لاین</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Vazir&display=swap');
+  body {
+    margin: 0; 
+    padding: 20px;
+    font-family: 'Vazir', sans-serif;
+    background: linear-gradient(to right, #f0f2f5, #d9e4f5);
+    color: #333;
+    direction: rtl;
+  }
+  .patient-header {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  .patient-header h2 {
+    margin-bottom: 15px;
+    color: #34495e;
+  }
+  .patient-header .info {
+    font-size: 1em;
+    color: #555;
+    line-height: 1.8em;
+  }
+  .timeline {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    padding: 20px 0;
+  }
+  .timeline::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 3px;
+    height: 100%;
+    background: #2980b9;
+    transform: translateX(-50%);
+  }
+  .event-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    width: 45%;
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .event-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+  .event-card.left {
+    margin-right: auto;
+  }
+  .event-card.right {
+    margin-left: auto;
+  }
+  .event-card::before {
+    content: "";
+    position: absolute;
+    top: 20px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #2980b9;
+    border: 4px solid #fff;
+  }
+  .event-card.left::before {
+    right: -10px;
+  }
+  .event-card.right::before {
+    left: -10px;
+  }
+  .event-date {
+    font-size: 0.95em;
+    color: #666;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+  .event-kind {
+    display: inline-block;
+    font-size: 0.85em;
+    background: #dcecff;
+    color: #2980b9;
+    padding: 5px 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+  }
+  .event-title {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #2c3e50;
+  }
+  .event-section {
+    font-size: 1em;
+    margin-bottom: 10px;
+    color: #555;
+    line-height: 1.6em;
+  }
+  .event-section label {
+    font-weight: bold;
+    color: #34495e;
+    margin-right: 5px;
+  }
+  .event-media {
+    margin-top: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+  .event-media img, .event-media iframe {
+    max-width: 300px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .event-media img:hover, .event-media iframe:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+  }
+  @media (max-width: 768px) {
+    .timeline::before {
+      left: 20px;
+    }
+    .event-card {
+      width: 90%;
+    }
+    .event-card.left, .event-card.right {
+      margin: 0 auto;
+    }
+    .event-card.left::before, .event-card.right::before {
+      left: -10px;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="patient-header">
+  <h2>اطلاعات بیمار</h2>
+  <div class="info">
+    نام بیمار: ${escapeHTML(p.name || "")}<br>
+    سن بیمار: ${p.age ? p.age + ' سال' : ''}<br>
+    شماره پرونده: ${escapeHTML(p.pid || "")}<br>
+    شماره تماس: ${escapeHTML(p.phone || "")}<br>
+    شغل: ${escapeHTML(p.job || "")}<br>
+    وضعیت تأهل: ${escapeHTML(p.marital || "")}
+  </div>
+</div>
+<div class="timeline">
+`;
+      steps.forEach((st, index) => {
+        const alignmentClass = index % 2 === 0 ? 'left' : 'right';
+        const dateVal      = escapeHTML(st.date);
+        const kindVal      = escapeHTML(st.kind);
+        const titleVal     = escapeHTML(st.title);
+        const symptomsVal  = escapeHTML(st.symptoms);
+        const actionVal    = escapeHTML(st.action);
+        const detailVal    = escapeHTML(st.details);
+        const outcomeVal   = escapeHTML(st.outcome);
+        if (!titleVal) { return; }
+        let filesHTML = '';
+        if (st.files && Array.isArray(st.files) && st.files.length > 0) {
+          const images = st.files.filter(f => f.type === 'image').map(f => `
+            <img src="${f.link}" alt="${escapeHTML(f.name)}" title="${escapeHTML(f.name)}" />
+          `).join('');
+          const pdfs = st.files.filter(f => f.type === 'pdf').map(f => `
+            <iframe src="${f.link}" title="${escapeHTML(f.name)}"></iframe>
+          `).join('');
+          if (images || pdfs) {
+            filesHTML = `<div class="event-media">
+${images}
+${pdfs}
+</div>`;
+          }
+        }
+        code += `
+  <div class="event-card ${alignmentClass}">
+    <div class="event-date">${dateVal}</div>
+    ${kindVal ? `<div class="event-kind">${kindVal}</div>` : ''}
+    <div class="event-title">${titleVal}</div>
+    ${symptomsVal ? `<div class="event-section"><label>علایم/شکایات:</label>${symptomsVal}</div>` : ''}
+    ${actionVal    ? `<div class="event-section"><label>اقدام:</label>${actionVal}</div>` : ''}
+    ${detailVal    ? `<div class="event-section"><label>جزئیات:</label>${detailVal}</div>` : ''}
+    ${outcomeVal   ? `<div class="event-section"><label>نتیجه:</label>${outcomeVal}</div>` : ''}
+    ${filesHTML}
+  </div>
+`;
+      });
+      code += `
+</div>
+</body>
+</html>
+`;
+      const blob = new Blob([code], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const previewFrame = document.getElementById("previewFrame");
+      previewFrame.src = url;
+      document.getElementById("modalOverlay").style.display = "flex";
+    }
+    function closePreviewModal() {
+      document.getElementById("modalOverlay").style.display = "none";
+      const previewFrame = document.getElementById("previewFrame");
+      previewFrame.src = "";
+    }
+    // Debounce function to limit the frequency of save calls
+    function debounce(func, wait) {
+      let timeout;
+      return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+      };
+    }
+    // Initialize Sortable for steps reordering
+    new Sortable(document.getElementById("stepsContainer"), {
+      animation: 150,
+      onEnd: function() {
+        saveData();
+      }
+    });
+    window.addEventListener('load', restoreData);
+    document.getElementById("addStepBtn").addEventListener('click', () => addStep());
+    document.getElementById("generateBtn").addEventListener('click', onGenerateTimeline);
+    document.getElementById("clearBtn").addEventListener('click', clearAllSteps);
+    document.getElementById("downloadJSONBtn").addEventListener('click', downloadJSON);
+    document.getElementById("toggleDarkModeBtn").addEventListener('click', toggleDarkMode);
+    document.getElementById("previewBtn").addEventListener('click', openPreviewModal);
+    document.getElementById("modalClose").addEventListener('click', closePreviewModal);
+  </script>
+</body>
+</html>
